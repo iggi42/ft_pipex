@@ -14,11 +14,12 @@
 # define PIPEX_H
 
 # include <libft_ll.h>
+# include <unistd.h>
 
 typedef struct s_pipex_args
 {
 	int		in_fd;
-	char	**cmds;
+	pid_t	cmds[2];
 	int	out_fd;
 	t_list *errors;
 }			t_pipex_args;

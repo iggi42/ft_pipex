@@ -3,8 +3,26 @@
 #include <libft_io.h>
 #include <libft_ll.h>
 #include <libft_mem.h>
+#include <libft_str.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+pid_t	spawn_cmd(char *cmd, char *const *envp)
+{
+	char	**cmd_ar;
+	char	*path;
+	pid_t	result;
+
+	cmd_ar = ft_split(cmd, ' ');
+	path = cmd_ar[0];
+	result = fork();
+	if (result > 0)
+	{
+		execve(path, cmd_ar, envp);
+		exit(-1);
+	}
+	return (result);
+}
 
 void	parse_arg_infile(t_pipex_args *arg, char *infile_path)
 {
@@ -16,17 +34,10 @@ void	parse_arg_infile(t_pipex_args *arg, char *infile_path)
 	arg->in_fd = fd;
 }
 
-void	parse_arg_cmd(char **cmd, char *in_cmd)
+void	parse_arg_cmd(pid_t *result, char *cmd_line, char *const *envp)
 {
-	*cmd = in_cmd;
-}
-
-void	parse_arg_cmds(t_pipex_args *arg, char **cmds, size_t n)
-{
-	if (n != 2)
-		ft_printf_fd(2, "jo, wtf. loook here again\n");
-	parse_arg_cmd(&(arg->cmds[0]), cmds[0]);
-	parse_arg_cmd(&(arg->cmds[1]), cmds[1]);
+	ft_printf("cmd line: [%s]\n", cmd_line);
+	*result = spawn_cmd(cmd_line, envp);
 }
 
 void	parse_arg_outfile(t_pipex_args *arg, char *outfile_path)
@@ -41,7 +52,7 @@ void	parse_arg_outfile(t_pipex_args *arg, char *outfile_path)
 	arg->in_fd = fd;
 }
 
-t_pipex_args	*parse_args(char **args)
+t_pipex_args	*parse_args(char **args, char **envp)
 {
 	t_pipex_args	*result;
 
@@ -49,34 +60,35 @@ t_pipex_args	*parse_args(char **args)
 	result->errors = NULL;
 	if (result == NULL)
 		return (NULL);
-	result->cmds = ft_calloc(3, sizeof(char *));
-	if (result->cmds == NULL)
-		return (ft_free(1, &result));
 	parse_arg_infile(result, args[0]);
-	parse_arg_cmds(result, args + 1, 2);
+	parse_arg_cmd(result->cmds, args[1], envp);
+	parse_arg_cmd(result->cmds + 1, args[2], envp);
 	parse_arg_outfile(result, args[3]);
 	return (result);
 }
 
-//TODO print errors in here?
+// TODO print errors in here?
 bool	is_args_valid(t_pipex_args *args)
 {
-	return (ft_lstsize(args->errors) == 0);
+	return (args->errors == NULL);
 }
 
-void	do_pipex(char **s_args)
+void	connect_pipes(t_pipex_args *args)
+{
+	(void)args;
+}
+
+void	do_pipex(char **s_args, char **envp)
 {
 	t_pipex_args	*args;
 
-	args = parse_args(s_args);
+	args = parse_args(s_args, envp);
 	if (is_args_valid(args))
-	{
-		ft_printf("valid args :)\n");
-	}
+		connect_pipes(args);
 }
 
-int	main(int argc, char **argv)
+int	main(int argc, char **argv, char *envp[])
 {
 	if (argc == 5)
-		do_pipex(argv + 1);
+		do_pipex(argv + 1, envp);
 }
