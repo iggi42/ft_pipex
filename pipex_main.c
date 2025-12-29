@@ -7,7 +7,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-pid_t	spawn_cmd(char *cmd, char *const *envp)
+// This doesn't handle envs in the beginning of the line yet
+// nor dies it handle ' or "
+pid_t	spawn_cmd(char *cmd, char *const *envp, int pipes[2])
 {
 	char	**cmd_ar;
 	char	*path;
@@ -24,23 +26,17 @@ pid_t	spawn_cmd(char *cmd, char *const *envp)
 	return (result);
 }
 
-void	parse_arg_infile(t_pipex_args *arg, char *infile_path)
+int	open_infile(char *infile_path)
 {
 	int	fd;
 
 	fd = -1;
 	if (access(infile_path, R_OK) == 0)
 		fd = open(infile_path, O_RDONLY);
-	arg->in_fd = fd;
+	return (fd);
 }
 
-void	parse_arg_cmd(pid_t *result, char *cmd_line, char *const *envp)
-{
-	ft_printf("cmd line: [%s]\n", cmd_line);
-	*result = spawn_cmd(cmd_line, envp);
-}
-
-void	parse_arg_outfile(t_pipex_args *arg, char *outfile_path)
+int	open_outfile(char *outfile_path)
 {
 	int	fd;
 
@@ -49,7 +45,15 @@ void	parse_arg_outfile(t_pipex_args *arg, char *outfile_path)
 		fd = open(outfile_path, O_WRONLY);
 	if (access(outfile_path, F_OK) != 0)
 		fd = open(outfile_path, O_WRONLY | O_CREAT, 0600); // TODO what perms???
-	arg->in_fd = fd;
+	return (fd);
+}
+
+void	spawn_pipel(size_t i, t_pipex_args *args, char *cmd_line, char *const *envp)
+{
+	int *p = args->pipe + i;
+	ft_printf("cmd line: [%s]\n", cmd_line);
+	pipe(p);
+	spawn_cmd(cmd_line, envp, p);
 }
 
 t_pipex_args	*parse_args(char **args, char **envp)
@@ -60,10 +64,10 @@ t_pipex_args	*parse_args(char **args, char **envp)
 	result->errors = NULL;
 	if (result == NULL)
 		return (NULL);
-	parse_arg_infile(result, args[0]);
-	parse_arg_cmd(result->cmds, args[1], envp);
-	parse_arg_cmd(result->cmds + 1, args[2], envp);
-	parse_arg_outfile(result, args[3]);
+	// result->pipe[0] =  parse_arg_infile(result, args[0]);
+	parse_arg_cmd(result, args[1], envp);
+	parse_arg_cmd(result, args[2], envp);
+	// parse_arg_outfile(result, args[3]);
 	return (result);
 }
 

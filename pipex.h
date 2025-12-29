@@ -18,9 +18,8 @@
 
 typedef struct s_pipex_args
 {
-	int		in_fd;
+	int pipe[4];
 	pid_t	cmds[2];
-	int	out_fd;
 	t_list *errors;
 }			t_pipex_args;
 
