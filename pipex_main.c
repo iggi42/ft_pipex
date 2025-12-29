@@ -4,25 +4,73 @@
 #include <libft_ll.h>
 #include <libft_mem.h>
 #include <libft_str.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+void	print_env(char *envp[])
+{
+	size_t	i;
+
+	i = 0;
+	while (*(envp + i))
+	{
+		ft_printf("%i: [%s] \n", i, *(envp + i));
+		i++;
+	}
+}
+
+char	*get_env(char *envp[], char *s)
+{
+	size_t	i;
+	size_t	slen;
+
+	i = 0;
+	slen = ft_strlen(s);
+	while (*(envp + i))
+	{
+		if (ft_strncmp(*(envp + i), s, slen) == 0 && *(*(envp + i)
+				+ slen) == '=')
+			return (*(envp + i) + slen + 1);
+		i++;
+	}
+	return (NULL);
+}
+
+char	*find_in_path(char *cmd0, char *envp[])
+{
+	char	**paths;
+	size_t	i;
+	char	*full_path;
+
+	if (access(cmd0, X_OK) == 0)
+		return (cmd0);
+	paths = ft_split(get_env(envp, "PATH"), ':');
+	i = 0;
+	while (*(paths + i))
+	{
+		full_path = ft_strf("%s/%s", *(paths + i), cmd0);
+		if (access(full_path, X_OK) == 0)
+			return (full_path);
+		free(full_path);
+		i++;
+	}
+	return (NULL);
+}
+
 // This doesn't handle envs in the beginning of the line yet
-// nor dies it handle ' or "
+// nor dies it escape space via \ ' or "
 pid_t	spawn_cmd(char *cmd, char *const *envp, int pipes[2])
 {
 	char	**cmd_ar;
-	char	*path;
+	char	*exec_file;
 	pid_t	result;
 
 	cmd_ar = ft_split(cmd, ' ');
-	path = cmd_ar[0];
+	exec_file = find_in_path(cmd_ar[0], (char **) envp);
 	result = fork();
-	if (result > 0)
-	{
-		execve(path, cmd_ar, envp);
-		exit(-1);
-	}
+	if (result == 0)
+		execve(exec_file, cmd_ar, envp);
 	return (result);
 }
 
@@ -77,9 +125,28 @@ bool	is_args_valid(t_pipex_args *args)
 	return (args->errors == NULL);
 }
 
+void print_pipex_args(t_pipex_args *args)
+{
+	ft_printf("in fd: [ %d ]\n", args->in_fd);
+	ft_printf("cmd pids: [ %d, %d ]\n", args->cmds[0], args->cmds[1]);
+	ft_printf("out fd: [ %d ]\n", args->out_fd);
+}
+
 void	connect_pipes(t_pipex_args *args)
 {
-	(void)args;
+	int in[2];
+	int out[2];
+	int cmds[2];
+
+	pipe(in);
+	pipe(out);
+	pipe(cmds);
+
+	ft_printf("connecting pipes boss [%d]\n",	pipe(args->cmds));
+	ft_printf("[%d]\n",	pipe(args->cmds));
+	ft_printf("connecting pipes boss [%d]\n",	pipe(args->cmds));
+
+	print_pipex_args(args);
 }
 
 void	do_pipex(char **s_args, char **envp)
@@ -87,6 +154,7 @@ void	do_pipex(char **s_args, char **envp)
 	t_pipex_args	*args;
 
 	args = parse_args(s_args, envp);
+
 	if (is_args_valid(args))
 		connect_pipes(args);
 }
