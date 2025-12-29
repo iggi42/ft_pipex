@@ -12,7 +12,7 @@
 
 # configuration variables
 CC = cc
-CFLAGS += -MD -Wall -Wextra -Werror
+CFLAGS += -MD -Wall -Wextra -Werror $(FT_EXTRA_CFLAGS)
 # -MD to generate the .d files in $(DEPS)
 
 NAME = pipex
@@ -36,6 +36,8 @@ LDLIBS += $(LIBFT_A)
 
 SELF=$(firstword $(MAKEFILE_LIST))
 
+export FT_EXTRA_CFLAGS
+
 # phony targets
 all: $(NAME)
 re: clean all
@@ -50,7 +52,9 @@ dev: $(DEV_FILES)
 dev_clean:
 	$(RM) $(DEV_FILES)
 	$(MAKE) -C $(LIBFT) $@
-.PHONY: fclean clean re all dev
+debug: FT_EXTRA_CFLAGS += -g
+debug: clean $(NAME)
+.PHONY: fclean clean re all dev debug
 
 # development helper files
 compile_flags.txt: $(SELF)
