@@ -16,11 +16,11 @@
 # include <libft_ll.h>
 # include <unistd.h>
 
-typedef struct s_pipex_args
+typedef struct s_pipex
 {
-	int pipe[4];
+	int		fds[6];
 	pid_t	cmds[2];
-	t_list *errors;
-}			t_pipex_args;
+	t_list	*errors;
+}			t_pipex;
 
 #endif
