@@ -10,74 +10,13 @@
 #                                                                              #
 # **************************************************************************** #
 
-# configuration variables
-CC = cc
-CFLAGS += -MD -Wall -Wextra -Werror $(FT_EXTRA_CFLAGS)
-# -MD to generate the .d files in $(DEPS)
-
 NAME = pipex
 HEADER = $(NAME).h
-
-GIT_IGNORE += .depend
-GIT_IGNORE += .gdb_history
-GIT_IGNORE += $(NAME)
-
 SRCS += pipex_main.c
 
-OBJS = $(SRCS:.c=.o)
-DEPS = $(OBJS:.o=.d)
-DEV_FILES = .gitignore compile_flags.txt
-GIT_IGNORE += $(OBJS) $(DEPS) $(DEV_FILES)
+-include common.mk
 
-LIBFT = ./libft
-LIBFT_A = ./libft/libft.a
-CFLAGS += -I./libft
-LDLIBS += $(LIBFT_A)
-
-SELF=$(firstword $(MAKEFILE_LIST))
-
-export FT_EXTRA_CFLAGS
-
-# phony targets
-all: $(NAME)
-re: clean all
-fclean: clean dev_clean
-	$(RM) $(NAME)
-	$(MAKE) -C $(LIBFT) $@
-clean:
-	$(RM) $(OBJS)
-	$(MAKE) -C $(LIBFT) $@
-dev: $(DEV_FILES)
-	$(MAKE) -C $(LIBFT) $@
-dev_clean:
-	$(RM) $(DEV_FILES)
-	$(MAKE) -C $(LIBFT) $@
-debug: FT_EXTRA_CFLAGS += -g
-debug: clean $(NAME)
-.PHONY: fclean clean re all dev debug
-
-# development helper files
-compile_flags.txt: $(SELF)
-	@echo setup $@
-	@echo -n > $@
-	@for flag in $(CFLAGS); do \
-		echo $$flag >> $@ ; \
-	done
-
-.gitignore: $(SELF)
-	@echo setup $@
-	@for ig in $(GIT_IGNORE); do \
-		echo $$ig >> $@ ; \
-	done
-
-# core build rules
 GIT_IGNORE += $(NAME)
 $(NAME): $(OBJS) $(LIBFT_A) 
-	$(CC) $(CFLAGS) -o $@ $^ 
+	$(CC) $(CFLAGS) -o $@ $^
 
-$(LIBFT_A): $(LIBFT)
-	$(MAKE) -C $(LIBFT)
-# $(notdir $@)
-
-GIT_IGNORE += $(DEPS)
--include $(DEPS)

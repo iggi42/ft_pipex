@@ -20,7 +20,6 @@ typedef struct s_pipex
 {
 	int		fds[6];
 	pid_t	cmds[2];
-	t_list	*errors;
 }			t_pipex;
 
 #endif
