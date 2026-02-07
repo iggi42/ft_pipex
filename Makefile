@@ -12,7 +12,7 @@
 
 NAME = pipex
 HEADER = $(NAME).h
-SRCS += pipex_main.c
+SRCS += pipex_main.c pipex_data.c
 
 -include common.mk
 

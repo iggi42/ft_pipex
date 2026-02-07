@@ -1,34 +1,38 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex.h                                            :+:      :+:    :+:   */
+/*   pipex_data.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fkruger <fkruger@student.42vienna.com      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/30 16:32:03 by fkruger           #+#    #+#             */
-/*   Updated: 2025/12/05 16:51:43 by fkruger          ###   ########.fr       */
+/*   Created: 2026/02/07 04:52:58 by fkruger           #+#    #+#             */
+/*   Updated: 2026/02/07 04:53:15 by fkruger          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PIPEX_H
-# define PIPEX_H
+#include "pipex.h"
 
-# include <libft_ll.h>
-# include <unistd.h>
-
-// fds:
-// 0 => input file && cmd1 stdin
-// 1 => cmd1 stdout
-// 3 => cmd2 stdin
-// 4 => cmd2 stdout && output file
-typedef struct s_pipex
+t_pipex* pipex_data(void)
 {
-	int		fds[4];
-	pid_t	cmds[2];
-}			t_pipex;
+	static t_pipex core;
 
-t_pipex *pipex_data(void);
+	return &core;
+}
 
-void pipex_cleanup(void);
+static void check_fd(int *fd)
+{
+	if (*fd < 0)
+		return ;
+	close(*fd);
+	*fd = -1;
+}
 
-#endif
+void pipex_cleanup(void)
+{
+	t_pipex *data = pipex_data();
+	
+	check_fd(&data->fds[0]);
+	check_fd(&data->fds[1]);
+	check_fd(&data->fds[2]);
+	check_fd(&data->fds[3]);
+}
