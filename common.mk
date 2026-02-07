@@ -38,6 +38,7 @@ re: clean all
 fclean: clean dev_clean
 	$(RM) $(NAME)
 	$(MAKE) -C $(LIBFT) $@
+	find -name '*.d' -print -delete
 clean:
 	$(RM) $(OBJS)
 	$(MAKE) -C $(LIBFT) $@
