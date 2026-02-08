@@ -20,3 +20,5 @@ GIT_IGNORE += $(NAME)
 $(NAME): $(OBJS) $(LIBFT_A) 
 	$(CC) $(CFLAGS) -o $@ $^
 
+$(NAME)_debug: $(OBJS) $(LIBFT_A) 
+	$(CC) -g $(CFLAGS) -o $@ $^

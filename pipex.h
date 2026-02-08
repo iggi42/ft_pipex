@@ -19,8 +19,8 @@
 // fds:
 // 0 => input file && cmd1 stdin
 // 1 => cmd1 stdout
-// 3 => cmd2 stdin
-// 4 => cmd2 stdout && output file
+// 2 => cmd2 stdin
+// 3 => cmd2 stdout && output file
 typedef struct s_pipex
 {
 	int		fds[4];

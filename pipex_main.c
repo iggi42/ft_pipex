@@ -65,15 +65,13 @@ void	do_pipex(char **s_args, char **envp)
 {
 	t_pipex *data = pipex_data();
 	data->fds[0] = open_infile(s_args[0]);
-	data->fds[5] =
-open_outfile(s_args[3]);
-	if (pipe(data->fds))
-		return pipex_cleanup()
-	ft_spawn_cmd(s_args[0], envp, );
-	(void) envp;
-
-	close(data->fds[0]);
-	close(data->fds[5]);
+	data->fds[3] = open_outfile(s_args[3]);
+	if (pipe(&data->fds[1]))
+		return pipex_cleanup();
+	ft_printf("[%d, %d, %d, %d]\n", data->fds[0], data->fds[1], data->fds[2], data->fds[3]);
+	data->cmds[0] = ft_spawn_cmd(s_args[1], envp, data->fds, pipex_cleanup);
+	if (data->cmds[0] > 0)
+		data->cmds[1] = ft_spawn_cmd(s_args[2], envp, &(data->fds[2]), pipex_cleanup);
 }
 
 int	main(int argc, char **argv, char *envp[])

@@ -19,6 +19,16 @@ t_pipex* pipex_data(void)
 	return &core;
 }
 
+void pipex_setup(void)
+{
+	t_pipex *data = pipex_data();
+	
+	data->fds[0] = -1;
+	data->fds[1] = -1;
+	data->fds[2] = -1;
+	data->fds[3] = -1;
+}
+
 static void check_fd(int *fd)
 {
 	if (*fd < 0)
