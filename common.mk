@@ -12,7 +12,9 @@
 
 # configuration variables
 CC = cc
-CFLAGS += -MD -Wall -Wextra -Werror -DFT_APP_NAME=\"$(NAME)\" $(FT_EXTRA_CFLAGS)
+CFLAGS += -MD -Wall -Wextra -Werror $(FT_EXTRA_CFLAGS)
+
+FT_EXTRA_CFLAGS += -DFT_APP_NAME=\"$(NAME)\"
 
 GIT_IGNORE += .depend
 GIT_IGNORE += .gdb_history

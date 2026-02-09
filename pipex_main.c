@@ -56,19 +56,19 @@ int	open_outfile(char *outfile_path)
 	return -1;
 }
 
-void	connect_pipes(t_pipex *p)
+void wait_pipex()
 {
-	(void) p;
+	pipex_data()->cmds[0]
 }
 
-void	do_pipex(char **s_args, char **envp)
+void	start_pipex(char **s_args, char **envp)
 {
 	t_pipex *data = pipex_data();
 	data->fds[0] = open_infile(s_args[0]);
 	data->fds[3] = open_outfile(s_args[3]);
 	if (pipe(&data->fds[1]))
 		return pipex_cleanup();
-	ft_printf("[%d, %d, %d, %d]\n", data->fds[0], data->fds[1], data->fds[2], data->fds[3]);
+	ft_switch(&data->fds[1], &data->fds[2]);
 	data->cmds[0] = ft_spawn_cmd(s_args[1], envp, data->fds, pipex_cleanup);
 	if (data->cmds[0] > 0)
 		data->cmds[1] = ft_spawn_cmd(s_args[2], envp, &(data->fds[2]), pipex_cleanup);
@@ -77,7 +77,10 @@ void	do_pipex(char **s_args, char **envp)
 int	main(int argc, char **argv, char *envp[])
 {
 	if (argc == 5)
-		do_pipex(argv + 1, envp);
+	{
+		start_pipex(argv + 1, envp);
+		wait_pipex();
+	}
 	else
 		ft_printf_fd(STDERR_FILENO, "call with 4 arguments\n");
 }

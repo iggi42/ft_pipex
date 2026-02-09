@@ -16,9 +16,12 @@ SRCS += pipex_main.c pipex_data.c
 
 -include common.mk
 
+GIT_IGNORE += 1 2 3 4 5 6 7 8 9
+
 GIT_IGNORE += $(NAME)
 $(NAME): $(OBJS) $(LIBFT_A) 
 	$(CC) $(CFLAGS) -o $@ $^
 
+GIT_IGNORE += $(NAME)_debug
 $(NAME)_debug: $(OBJS) $(LIBFT_A) 
 	$(CC) -g $(CFLAGS) -o $@ $^
