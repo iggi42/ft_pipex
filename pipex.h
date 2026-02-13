@@ -31,4 +31,7 @@ t_pipex *pipex_data(void);
 
 void pipex_cleanup(void);
 
+void pipex_close_except(int fd);
+void pipex_close_except_2(int fd1, int fd2);
+
 #endif

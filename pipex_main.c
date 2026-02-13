@@ -17,6 +17,7 @@
 #include <libft_ll.h>
 #include <libft_mem.h>
 #include <libft_str.h>
+#include <sys/wait.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -58,7 +59,20 @@ int	open_outfile(char *outfile_path)
 
 void wait_pipex()
 {
-	pipex_data()->cmds[0]
+	int res[2];
+
+	ft_printf("[%d, %d]\n", pipex_data()->cmds[0], pipex_data()->cmds[1]);
+	waitpid(pipex_data()->cmds[1], res + 1, 0);
+	waitpid(pipex_data()->cmds[0], res, 0);
+	ft_printf("first proc exited with [%d]\n", *res);
+
+	if(pipex_data()->cmds[1] <= 0)
+		return ;
+	ft_printf("2. pid: %d\n", pipex_data()->cmds[1]);
+	waitpid(pipex_data()->cmds[1], res + 1, 0);
+	close(pipex_data()->fds[2]);
+	close(pipex_data()->fds[3]);
+	ft_printf("secound proc exited with [%d]\n", *(res + 1));
 }
 
 void	start_pipex(char **s_args, char **envp)
