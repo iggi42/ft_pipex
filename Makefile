@@ -14,7 +14,7 @@ NAME = pipex
 HEADER = $(NAME).h
 SRCS += pipex_main.c pipex_data.c
 
--include common.mk
+-include libft/project.mk
 
 GIT_IGNORE += 1 2 3 4 5 6 7 8 9
 

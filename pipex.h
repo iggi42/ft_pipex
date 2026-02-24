@@ -13,7 +13,6 @@
 #ifndef PIPEX_H
 # define PIPEX_H
 
-# include <libft_ll.h>
 # include <unistd.h>
 
 // fds:
@@ -27,11 +26,17 @@ typedef struct s_pipex
 	pid_t	cmds[2];
 }			t_pipex;
 
-t_pipex *pipex_data(void);
+typedef union u_my_test
+{
+	int		fd;
+	char	*path;
+}			t_my_test;
 
-void pipex_cleanup(void);
+t_pipex		*pipex_data(void);
 
-void pipex_close_except(int fd);
-void pipex_close_except_2(int fd1, int fd2);
+void		pipex_cleanup(void);
+
+void		pipex_close_except(int fd);
+void		pipex_close_except_2(int fd1, int fd2);
 
 #endif
