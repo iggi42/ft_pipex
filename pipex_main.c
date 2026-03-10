@@ -24,12 +24,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-typedef struct s_pipe_end
-{
-	int		*fds;
-	char	*path;
-}			t_pipe_end;
-
 void	error_out(const char *msg)
 {
 	char	*str;
@@ -62,102 +56,72 @@ int	open_outfile(char *outfile_path)
 	return (-1);
 }
 
-void	wait_pipex(void)
+static void	child_exec(char *cmd)
 {
-	int	res[2];
+	char	**argv;
+	char	*path;
 
-	ft_printf("PIDS: [%d, %d]\n", pipex_data()->cmds[0], pipex_data()->cmds[1]);
-	waitpid(pipex_data()->cmds[0], &res[0], 0);
-	waitpid(pipex_data()->cmds[1], &res[1], 0);
-	if (pipex_data()->cmds[1] <= 0)
-		return ;
-	waitpid(pipex_data()->cmds[1], res + 1, 0);
-	close(pipex_data()->fds[2]);
-	close(pipex_data()->fds[3]);
+	argv = ft_split(cmd, ' ');
+	path = ft_os_search_path(argv[0], __environ);
+	if (!path)
+		error_out(ft_strf("not found: %s", argv[0]));
+	ft_execve(path, argv, __environ);
 }
 
-void	pprint_pipe_end(char *name, t_pipe_end *end)
+pid_t	start_first_cmd(char *cmd, int out_fd, char *infile_path)
 {
-	if (end == NULL)
-	{
-		ft_printf("pipe end: %s => NULL\n", name);
-		return ;
-	}
-	ft_printf("pipe end: %s\n path: %s\n  fds: (%d, %d, %d, %d)  \n", name,
-		end->path, end->fds[0], end->fds[1], end->fds[2], end->fds[3]);
+	pid_t	pid;
+	int in_fd;
+
+	pid = fork();
+	if (pid != 0)
+		return (pid);
+    in_fd = open_infile(infile_path);
+	dup2(in_fd, STDIN_FILENO);
+	close(in_fd);
+	dup2(out_fd, STDOUT_FILENO);
+	child_exec(cmd);
+	return (-1);
 }
 
-static void	ft_close(int *fd)
+pid_t	start_last_cmd(char *cmd, int in_fd, char *outfile_path)
 {
-	close(*fd);
-	*fd = -1;
+	pid_t	pid;
+	int out_fd;
+
+	pid = fork();
+	if (pid != 0)
+		return (pid);
+	out_fd = open_outfile(outfile_path);
+	dup2(out_fd, STDOUT_FILENO);
+	close(out_fd);
+	dup2(in_fd, STDIN_FILENO);
+	child_exec(cmd);
+	return (-1);
 }
 
-int	*open_first(void *arg)
+int	start_pipex(char **argv)
 {
-	t_pipe_end	*start;
+	int			fd[2];
+	pid_t		pids[2];
+	int res[2];
 
-	start = arg;
-	start->fds[0] = open_infile(start->path);
-	ft_close(&start->fds[2]);
-	// pprint_pipe_end("first", start);
-	return (start->fds);
-}
+	if (pipe(fd) == -1)
+		return (error_out("pipe"), -1);
 
-int	*open_last(void *arg)
-{
-	t_pipe_end	*end;
-
-	end = arg;
-	end->fds[3] = open_outfile(end->path);
-	ft_close(&end->fds[1]);
-	// pprint_pipe_end("last", end);
-	return (end->fds + 2);
-}
-
-void	*parse_cmd(t_arr_el el)
-{
-	t_os_exec	*parsed;
-
-	ft_os_exec(cmd0, int *(*setup)(void *), void *setup_arg)
-
-	parsed = ft_os_search_path(char *cmd0, char **envp)
-	return (parsed);
-}
-
-void	start_pipex(size_t argc, char **args)
-{
-	t_arr	*parsed_cmds;
-
-	parsed_cmds = ft_arr_nmap((t_arr)(args + 1), argc - 2, parse_cmd);
-}
-
-void	start_pipex_old(char **s_args, char **envp)
-{
-	int			fd[4];
-	t_os_exec	*c1;
-	t_os_exec	*c2;
-
-	t_pipe_end end, start;
-	c1 = ft_os_cmd_parse(s_args[1], envp);
-	c2 = ft_os_cmd_parse(s_args[2], envp);
-	start.fds = (int *)&fd;
-	start.path = s_args[0];
-	end.fds = (int *)&fd;
-	end.path = s_args[3];
-	if (pipe(fd + 1) == -1)
-		return (free(c1), free(c2));
-	ft_switch(&fd[1], &fd[2]);
-	ft_os_exec(c1, open_first, &start);
-	ft_os_exec(c2, open_last, &end);
-	(free(c1), free(c2));
+	pids[0] = start_first_cmd(argv[1], fd[1], argv[0]);
+	pids[1] = start_last_cmd(argv[2], fd[0], argv[3]);
+	printf("[%d , %d]\n", pids[0], pids[1]);
+	waitpid(pids[1], &res[1], 0);
+	waitpid(pids[0], &res[0], 0);
+	return (res[1]);
 }
 
 int	main(int argc, char **argv)
 {
 	if (argc == 5)
-		start_pipex(argc - 1, argv + 1);
-		// wait_pipex();
+		start_pipex(argv + 1);
+	// wait_pipex();
 	else
 		ft_printf_fd(STDERR_FILENO, "call with 4 arguments\n");
 }
