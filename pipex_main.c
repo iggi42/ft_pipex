@@ -12,6 +12,7 @@
 
 #include "pipex.h"
 #include <fcntl.h>
+#include <libft_arr.h>
 #include <libft_io.h>
 #include <libft_ll.h>
 #include <libft_mem.h>
@@ -75,13 +76,6 @@ void	wait_pipex(void)
 	close(pipex_data()->fds[3]);
 }
 
-void	check_exec(t_os_exec *exec)
-{
-	if (exec != NULL && exec->exec_file != NULL)
-		return ;
-	error_out(exec->argv[0]);
-}
-
 void	pprint_pipe_end(char *name, t_pipe_end *end)
 {
 	if (end == NULL)
@@ -93,7 +87,7 @@ void	pprint_pipe_end(char *name, t_pipe_end *end)
 		end->path, end->fds[0], end->fds[1], end->fds[2], end->fds[3]);
 }
 
-static void ft_close(int *fd)
+static void	ft_close(int *fd)
 {
 	close(*fd);
 	*fd = -1;
@@ -106,7 +100,7 @@ int	*open_first(void *arg)
 	start = arg;
 	start->fds[0] = open_infile(start->path);
 	ft_close(&start->fds[2]);
-	pprint_pipe_end("first", start);
+	// pprint_pipe_end("first", start);
 	return (start->fds);
 }
 
@@ -117,11 +111,28 @@ int	*open_last(void *arg)
 	end = arg;
 	end->fds[3] = open_outfile(end->path);
 	ft_close(&end->fds[1]);
-	pprint_pipe_end("last", end);
+	// pprint_pipe_end("last", end);
 	return (end->fds + 2);
 }
 
-void	start_pipex(char **s_args, char **envp)
+void	*parse_cmd(t_arr_el el)
+{
+	t_os_exec	*parsed;
+
+	ft_os_exec(cmd0, int *(*setup)(void *), void *setup_arg)
+
+	parsed = ft_os_search_path(char *cmd0, char **envp)
+	return (parsed);
+}
+
+void	start_pipex(size_t argc, char **args)
+{
+	t_arr	*parsed_cmds;
+
+	parsed_cmds = ft_arr_nmap((t_arr)(args + 1), argc - 2, parse_cmd);
+}
+
+void	start_pipex_old(char **s_args, char **envp)
 {
 	int			fd[4];
 	t_os_exec	*c1;
@@ -130,8 +141,6 @@ void	start_pipex(char **s_args, char **envp)
 	t_pipe_end end, start;
 	c1 = ft_os_cmd_parse(s_args[1], envp);
 	c2 = ft_os_cmd_parse(s_args[2], envp);
-	check_exec(c1);
-	check_exec(c2);
 	start.fds = (int *)&fd;
 	start.path = s_args[0];
 	end.fds = (int *)&fd;
@@ -141,15 +150,14 @@ void	start_pipex(char **s_args, char **envp)
 	ft_switch(&fd[1], &fd[2]);
 	ft_os_exec(c1, open_first, &start);
 	ft_os_exec(c2, open_last, &end);
+	(free(c1), free(c2));
 }
 
-int	main(int argc, char **argv, char *envp[])
+int	main(int argc, char **argv)
 {
 	if (argc == 5)
-	{
-		start_pipex(argv + 1, envp);
+		start_pipex(argc - 1, argv + 1);
 		// wait_pipex();
-	}
 	else
 		ft_printf_fd(STDERR_FILENO, "call with 4 arguments\n");
 }
