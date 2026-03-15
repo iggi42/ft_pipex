@@ -10,6 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#define _GNU_SOURCE             /* See feature_test_macros(7) */
+#include <fcntl.h>              /* Definition of O_* constants */
+#include <unistd.h>
+
 #include "pipex.h"
 #include <fcntl.h>
 #include <libft_arr.h>
@@ -18,6 +22,7 @@
 #include <libft_mem.h>
 #include <libft_os.h>
 #include <libft_str.h>
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -30,6 +35,16 @@ void	error_out(const char *msg)
 	char	*str;
 
 	str = ft_strf("%s: %s", FT_APP_NAME, msg);
+	perror(str);
+	free(str);
+	exit(EXIT_FAILURE);
+}
+
+void	error_out2(const char *msg, const char *msg2)
+{
+	char	*str;
+
+	str = ft_strf("%s: %s: %s", FT_APP_NAME, msg, msg2);
 	perror(str);
 	free(str);
 	exit(EXIT_FAILURE);
@@ -64,9 +79,18 @@ static void	child_exec(char *cmd)
 
 	argv = ft_split(cmd, ' ');
 	path = ft_os_search_path(argv[0], __environ);
-	if (!path)
-		error_out(ft_strf("not found: %s", argv[0]));
-	execve(path, argv, __environ);
+	if (path)
+		execve(path, argv, __environ);
+	else
+		path = argv[0];
+	(ft_arr_each((t_arr) (argv + 1), free), free(argv));
+	error_out2("not found", path);
+}
+
+void mv_fd(int from, int to)
+{
+	dup2(from, to);
+	close(from);
 }
 
 pid_t	start_first_cmd(char *cmd, int out_fd, char *infile_path)
@@ -78,10 +102,8 @@ pid_t	start_first_cmd(char *cmd, int out_fd, char *infile_path)
 	if (pid != 0)
 		return (close(out_fd), pid);
 	in_fd = open_infile(infile_path);
-	dup2(in_fd, STDIN_FILENO);
-	close(in_fd);
-	dup2(out_fd, STDOUT_FILENO);
-	close(out_fd);
+	mv_fd(in_fd, STDIN_FILENO);
+	mv_fd(out_fd, STDOUT_FILENO);
 	child_exec(cmd);
 	return (-1);
 }
@@ -124,7 +146,7 @@ int	start_pipex(char **argv)
 	int		fd[2];
 	pid_t	pids[2];
 
-	if (pipe(fd) == -1)
+	if (pipe2(fd, O_NONBLOCK) == -1)
 		return (error_out("pipe"), -1);
 	pids[0] = start_first_cmd(argv[1], fd[1], argv[0]);
 	pids[1] = start_last_cmd(argv[2], fd[0], argv[3]);
