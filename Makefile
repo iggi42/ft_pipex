@@ -13,6 +13,7 @@
 NAME = pipex
 HEADER = $(NAME).h
 SRCS += pipex_main.c pipex_data.c
+FT_EXTRA_CFLAGS += -g -Xanalyzer
 
 -include libft/project.mk
 
