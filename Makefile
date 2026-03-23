@@ -12,12 +12,13 @@
 
 NAME = pipex
 HEADER = $(NAME).h
-SRCS += pipex_main.c pipex_data.c
-FT_EXTRA_CFLAGS += -g -Xanalyzer
+SRCS += pipex_main.c
+FT_EXTRA_CFLAGS += -g
+
+libft:
+	git clone https://github.com/iggi42/ft_libft libft
 
 -include libft/project.mk
-
-GIT_IGNORE += 1 2 3 4 5 6 7 8 9
 
 GIT_IGNORE += $(NAME)
 $(NAME): $(OBJS) $(LIBFT_A) 

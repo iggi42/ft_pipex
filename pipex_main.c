@@ -30,6 +30,12 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+typedef enum {
+	no_error = 0,
+	arg0_not_found,
+	arg0_not_executable
+} t_pipex_err ;
+
 void	error_out(const char *msg)
 {
 	char	*str;
@@ -65,7 +71,8 @@ int	open_outfile(char *outfile_path)
 {
 	int	fd;
 
-	fd = open(outfile_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	fd = open(outfile_path, O_CREAT |  O_TRUNC | O_WRONLY, 0644);
+	// ft_printf("joa lol");
 	if (fd > 0)
 		return (fd);
 	error_out(outfile_path);
@@ -83,7 +90,7 @@ static void	child_exec(char *cmd)
 		execve(path, argv, __environ);
 	else
 		path = argv[0];
-	(ft_arr_each((t_arr) (argv + 1), free), free(argv));
+	(ft_arr_each((t_arr) argv, free), free(argv));
 	error_out2("not found", path);
 }
 
@@ -117,10 +124,8 @@ pid_t	start_last_cmd(char *cmd, int in_fd, char *outfile_path)
 	if (pid != 0)
 		return (close(in_fd), pid);
 	out_fd = open_outfile(outfile_path);
-	dup2(out_fd, STDOUT_FILENO);
-	close(out_fd);
-	dup2(in_fd, STDIN_FILENO);
-	close(in_fd);
+	mv_fd(in_fd, STDIN_FILENO);
+	mv_fd(out_fd, STDOUT_FILENO);
 	child_exec(cmd);
 	return (-1);
 }
@@ -129,12 +134,11 @@ int	wait_pipex(int *pids)
 {
 	int		res[2];
 	size_t	i;
-	pid_t	wait_pid;
 
 	i = 0;
 	while (i < 2)
 	{
-		wait_pid = waitpid(pids[i], &res[i], 0);
+		waitpid(pids[i], &res[i], 0);
 		if(WIFEXITED(res[i]))
 			i++;
 	}
@@ -158,5 +162,5 @@ int	main(int argc, char **argv)
 	if (argc == 5)
 		return (start_pipex(argv + 1));
 	else
-		ft_printf_fd(STDERR_FILENO, "call with 4 arguments\n");
+		ft_printf_fd(STDERR_FILENO, "call with 4 arguments: ./pipex $1 $2 $3 $4\n");
 }
