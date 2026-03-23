@@ -15,6 +15,8 @@ HEADER = $(NAME).h
 SRCS += pipex_main.c
 FT_EXTRA_CFLAGS += -g
 
+all:
+
 libft:
 	git clone https://github.com/iggi42/ft_libft libft
 

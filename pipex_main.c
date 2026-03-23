@@ -72,14 +72,13 @@ int	open_outfile(char *outfile_path)
 	int	fd;
 
 	fd = open(outfile_path, O_CREAT |  O_TRUNC | O_WRONLY, 0644);
-	// ft_printf("joa lol");
 	if (fd > 0)
 		return (fd);
 	error_out(outfile_path);
 	return (-1);
 }
 
-static void	child_exec(char *cmd)
+static int child_exec(char *cmd)
 {
 	char	**argv;
 	char	*path;
@@ -94,66 +93,88 @@ static void	child_exec(char *cmd)
 	error_out2("not found", path);
 }
 
+void close_pipe(int *pipe)
+{
+	close(pipe[0]);
+	close(pipe[1]);
+}
+
 void mv_fd(int from, int to)
 {
 	dup2(from, to);
 	close(from);
 }
 
-pid_t	start_first_cmd(char *cmd, int out_fd, char *infile_path)
+pid_t	start_first_cmd(char *cmd, int *pipe_fds, char *infile_path)
 {
 	pid_t	pid;
 	int		in_fd;
 
 	pid = fork();
 	if (pid != 0)
-		return (close(out_fd), pid);
+		return (pid);
 	in_fd = open_infile(infile_path);
 	mv_fd(in_fd, STDIN_FILENO);
-	mv_fd(out_fd, STDOUT_FILENO);
-	child_exec(cmd);
-	return (-1);
+	dup2(pipe_fds[1], STDOUT_FILENO);
+	close_pipe(pipe_fds);
+	return child_exec(cmd);
 }
 
-pid_t	start_last_cmd(char *cmd, int in_fd, char *outfile_path)
+pid_t	start_last_cmd(char *cmd, int *pipe_fds, char *outfile_path)
 {
 	pid_t	pid;
 	int		out_fd;
 
 	pid = fork();
 	if (pid != 0)
-		return (close(in_fd), pid);
+		return (pid);
 	out_fd = open_outfile(outfile_path);
-	mv_fd(in_fd, STDIN_FILENO);
 	mv_fd(out_fd, STDOUT_FILENO);
-	child_exec(cmd);
-	return (-1);
+	dup2(pipe_fds[0], STDIN_FILENO);
+	close_pipe(pipe_fds);
+	return child_exec(cmd);
+}
+
+int get_exit_code(int res)
+{
+	if (WIFEXITED(res))
+		return WEXITSTATUS(res);
+	if (WIFSIGNALED(res))
+		return (128 + WTERMSIG(res));
+	return res;
+}
+
+int ft_wait(pid_t pid)
+{
+	int res;
+	pid_t sig_pid;
+
+	sig_pid = -1;
+	res = 0;
+	while(true)
+	{
+		sig_pid = waitpid(pid, &res, 0);
+		if (sig_pid == pid)
+			return get_exit_code(res);
+	}
 }
 
 int	wait_pipex(int *pids)
 {
-	int		res[2];
-	size_t	i;
-
-	i = 0;
-	while (i < 2)
-	{
-		waitpid(pids[i], &res[i], 0);
-		if(WIFEXITED(res[i]))
-			i++;
-	}
-	return (WEXITSTATUS(res[1]));
+	ft_wait(pids[0]);
+	return ft_wait(pids[1]);
 }
 
 int	start_pipex(char **argv)
 {
-	int		fd[2];
+	int		pipe_fds[2];
 	pid_t	pids[2];
 
-	if (pipe2(fd, O_NONBLOCK) == -1)
+	if (pipe(pipe_fds) == -1)
 		return (error_out("pipe"), -1);
-	pids[0] = start_first_cmd(argv[1], fd[1], argv[0]);
-	pids[1] = start_last_cmd(argv[2], fd[0], argv[3]);
+	pids[0] = start_first_cmd(argv[1], pipe_fds, argv[0]);
+	pids[1] = start_last_cmd(argv[2], pipe_fds, argv[3]);
+	close_pipe(pipe_fds);
 	return (wait_pipex(pids));
 }
 
