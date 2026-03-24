@@ -10,11 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#define _GNU_SOURCE             /* See feature_test_macros(7) */
-#include <fcntl.h>              /* Definition of O_* constants */
-#include <unistd.h>
-
+#define _GNU_SOURCE /* See feature_test_macros(7) */
 #include "pipex.h"
+#include <errno.h>
+#include <fcntl.h> /* Definition of O_* constants */
 #include <fcntl.h>
 #include <libft_arr.h>
 #include <libft_io.h>
@@ -22,19 +21,12 @@
 #include <libft_mem.h>
 #include <libft_os.h>
 #include <libft_str.h>
-
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
-typedef enum {
-	no_error = 0,
-	arg0_not_found,
-	arg0_not_executable
-} t_pipex_err ;
 
 void	error_out(const char *msg)
 {
@@ -71,35 +63,50 @@ int	open_outfile(char *outfile_path)
 {
 	int	fd;
 
-	fd = open(outfile_path, O_CREAT |  O_TRUNC | O_WRONLY, 0644);
+	fd = open(outfile_path, O_CREAT | O_TRUNC | O_WRONLY, 0644);
 	if (fd > 0)
 		return (fd);
 	error_out(outfile_path);
 	return (-1);
 }
 
-static int child_exec(char *cmd)
+static int	child_exec(char *cmd)
 {
 	char	**argv;
 	char	*path;
 
+	if (ft_strlen(cmd) == 0)
+		exit(EXIT_FAILURE);
 	argv = ft_split(cmd, ' ');
-	path = ft_os_search_path(argv[0], __environ);
-	if (path)
-		execve(path, argv, __environ);
+	if (ft_strncmp("./", argv[0], 2) == 0)
+		path = ft_strdup(argv[0]);
 	else
-		path = argv[0];
-	(ft_arr_each((t_arr) argv, free), free(argv));
-	error_out2("not found", path);
+		path = ft_os_search_path(argv[0], __environ);
+	if (path == NULL)
+	{
+		ft_arr_each((t_arr)argv, free);
+		free(argv);
+		free(path);
+		perror("command not found");
+		exit(127);
+	}
+	execve(path, argv, __environ);
+	if (errno == ENOENT)
+		perror(path);
+	ft_arr_each((t_arr)argv, free);
+	free(argv);
+	free(path);
+	exit(128);
+	return (-1);
 }
 
-void close_pipe(int *pipe)
+void	close_pipe(int *pipe)
 {
 	close(pipe[0]);
 	close(pipe[1]);
 }
 
-void mv_fd(int from, int to)
+void	mv_fd(int from, int to)
 {
 	dup2(from, to);
 	close(from);
@@ -117,7 +124,8 @@ pid_t	start_first_cmd(char *cmd, int *pipe_fds, char *infile_path)
 	mv_fd(in_fd, STDIN_FILENO);
 	dup2(pipe_fds[1], STDOUT_FILENO);
 	close_pipe(pipe_fds);
-	return child_exec(cmd);
+	child_exec(cmd);
+	return (-1);
 }
 
 pid_t	start_last_cmd(char *cmd, int *pipe_fds, char *outfile_path)
@@ -132,37 +140,31 @@ pid_t	start_last_cmd(char *cmd, int *pipe_fds, char *outfile_path)
 	mv_fd(out_fd, STDOUT_FILENO);
 	dup2(pipe_fds[0], STDIN_FILENO);
 	close_pipe(pipe_fds);
-	return child_exec(cmd);
+	return (child_exec(cmd));
 }
 
-int get_exit_code(int res)
+int	get_exit_code(int res)
 {
 	if (WIFEXITED(res))
-		return WEXITSTATUS(res);
+		return (WEXITSTATUS(res));
 	if (WIFSIGNALED(res))
 		return (128 + WTERMSIG(res));
-	return res;
+	return (res);
 }
 
-int ft_wait(pid_t pid)
+int	ft_wait(pid_t pid)
 {
-	int res;
-	pid_t sig_pid;
+	int		res;
+	pid_t	sig_pid;
 
 	sig_pid = -1;
 	res = 0;
-	while(true)
+	while (true)
 	{
 		sig_pid = waitpid(pid, &res, 0);
 		if (sig_pid == pid)
-			return get_exit_code(res);
+			return (get_exit_code(res));
 	}
-}
-
-int	wait_pipex(int *pids)
-{
-	ft_wait(pids[0]);
-	return ft_wait(pids[1]);
 }
 
 int	start_pipex(char **argv)
@@ -175,7 +177,8 @@ int	start_pipex(char **argv)
 	pids[0] = start_first_cmd(argv[1], pipe_fds, argv[0]);
 	pids[1] = start_last_cmd(argv[2], pipe_fds, argv[3]);
 	close_pipe(pipe_fds);
-	return (wait_pipex(pids));
+	ft_wait(pids[0]);
+	return (ft_wait(pids[1]));
 }
 
 int	main(int argc, char **argv)
@@ -183,5 +186,6 @@ int	main(int argc, char **argv)
 	if (argc == 5)
 		return (start_pipex(argv + 1));
 	else
-		ft_printf_fd(STDERR_FILENO, "call with 4 arguments: ./pipex $1 $2 $3 $4\n");
+		error_out("call with 4 arguments: ./pipex $1 $2 $3 $4\n");
+	return (EXIT_SUCCESS);
 }
