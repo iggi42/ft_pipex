@@ -25,27 +25,25 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
-void	error_out(const char *msg)
+void	error_out(int exit_code, char *msg, int error_code)
 {
-	char	*str;
-
-	str = ft_strf("%s: %s", FT_APP_NAME, msg);
-	perror(str);
-	free(str);
-	exit(EXIT_FAILURE);
-}
-
-void	error_out2(const char *msg, const char *msg2)
-{
-	char	*str;
-
-	str = ft_strf("%s: %s: %s", FT_APP_NAME, msg, msg2);
-	perror(str);
-	free(str);
-	exit(EXIT_FAILURE);
+	ft_putstr_fd(FT_APP_NAME, STDERR_FILENO);
+	if (msg != NULL)
+	{
+		ft_putstr_fd(": ", STDERR_FILENO);
+		ft_putstr_fd(msg, STDERR_FILENO);
+	}
+	if (error_code != 0)
+	{
+		ft_putstr_fd(": ", STDERR_FILENO);
+		ft_putstr_fd(strerror(error_code), STDERR_FILENO);
+	}
+	ft_putstr_fd("\n", STDERR_FILENO);
+	exit(exit_code);
 }
 
 int	open_infile(char *infile_path)
@@ -55,7 +53,7 @@ int	open_infile(char *infile_path)
 	fd = open(infile_path, O_RDONLY);
 	if (fd > 0)
 		return (fd);
-	error_out(infile_path);
+	error_out(EXIT_FAILURE, infile_path, errno);
 	return (-1);
 }
 
@@ -66,8 +64,15 @@ int	open_outfile(char *outfile_path)
 	fd = open(outfile_path, O_CREAT | O_TRUNC | O_WRONLY, 0644);
 	if (fd > 0)
 		return (fd);
-	error_out(outfile_path);
+	error_out(EXIT_FAILURE, outfile_path, errno);
 	return (-1);
+}
+
+static void	cleanup_child(char **argv, char *path)
+{
+	ft_arr_each((t_arr)argv, free);
+	free(argv);
+	free(path);
 }
 
 static int	child_exec(char *cmd)
@@ -83,19 +88,11 @@ static int	child_exec(char *cmd)
 	else
 		path = ft_os_search_path(argv[0], __environ);
 	if (path == NULL)
-	{
-		ft_arr_each((t_arr)argv, free);
-		free(argv);
-		free(path);
-		perror("command not found");
-		exit(127);
-	}
+		(cleanup_child(argv, path),	error_out(127, "command not found", 0));
 	execve(path, argv, __environ);
 	if (errno == ENOENT)
 		perror(path);
-	ft_arr_each((t_arr)argv, free);
-	free(argv);
-	free(path);
+	cleanup_child(argv, path);
 	exit(128);
 	return (-1);
 }
@@ -112,12 +109,22 @@ void	mv_fd(int from, int to)
 	close(from);
 }
 
+pid_t	ft_fork(void)
+{
+	pid_t	result;
+
+	result = fork();
+	if (result < 0)
+		error_out(EXIT_FAILURE, NULL, errno);
+	return (result);
+}
+
 pid_t	start_first_cmd(char *cmd, int *pipe_fds, char *infile_path)
 {
 	pid_t	pid;
 	int		in_fd;
 
-	pid = fork();
+	pid = ft_fork();
 	if (pid != 0)
 		return (pid);
 	in_fd = open_infile(infile_path);
@@ -133,7 +140,7 @@ pid_t	start_last_cmd(char *cmd, int *pipe_fds, char *outfile_path)
 	pid_t	pid;
 	int		out_fd;
 
-	pid = fork();
+	pid = ft_fork();
 	if (pid != 0)
 		return (pid);
 	out_fd = open_outfile(outfile_path);
@@ -173,7 +180,7 @@ int	start_pipex(char **argv)
 	pid_t	pids[2];
 
 	if (pipe(pipe_fds) == -1)
-		return (error_out("pipe"), -1);
+		return (error_out(EXIT_FAILURE, "pipe failed", errno), -1);
 	pids[0] = start_first_cmd(argv[1], pipe_fds, argv[0]);
 	pids[1] = start_last_cmd(argv[2], pipe_fds, argv[3]);
 	close_pipe(pipe_fds);
@@ -186,6 +193,7 @@ int	main(int argc, char **argv)
 	if (argc == 5)
 		return (start_pipex(argv + 1));
 	else
-		error_out("call with 4 arguments: ./pipex $1 $2 $3 $4\n");
-	return (EXIT_SUCCESS);
+		error_out(EXIT_FAILURE, "call with 4 arguments: ./pipex $1 $2 $3 $4\n",
+			0);
+	return (EXIT_FAILURE);
 }
