@@ -12,13 +12,8 @@
 
 NAME = pipex
 HEADER = $(NAME).h
-SRCS += pipex_main.c
+SRCS += children.c error_out.c pipex_main.c redirects.c utils.c
 FT_EXTRA_CFLAGS += -g
-
-all:
-
-libft:
-	git clone https://github.com/iggi42/ft_libft libft
 
 -include libft/project.mk
 
@@ -29,3 +24,7 @@ $(NAME): $(OBJS) $(LIBFT_A)
 GIT_IGNORE += $(NAME)_debug
 $(NAME)_debug: $(OBJS) $(LIBFT_A) 
 	$(CC) -g $(CFLAGS) -o $@ $^
+
+libft:
+	git clone https://github.com/iggi42/ft_libft libft
+

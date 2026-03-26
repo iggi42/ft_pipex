@@ -12,31 +12,15 @@
 
 #ifndef PIPEX_H
 # define PIPEX_H
-
 # include <unistd.h>
 
-// fds:
-// 0 => input file && cmd1 stdin
-// 1 => cmd1 stdout
-// 2 => cmd2 stdin
-// 3 => cmd2 stdout && output file
-typedef struct s_pipex
-{
-	int		fds[4];
-	pid_t	cmds[2];
-}			t_pipex;
-
-typedef union u_my_test
-{
-	int		fd;
-	char	*path;
-}			t_my_test;
-
-t_pipex		*pipex_data(void);
-
-void		pipex_cleanup(void);
-
-void		pipex_close_except(int fd);
-void		pipex_close_except_2(int fd1, int fd2);
+void	error_out(int exit_code, char *msg, int error_code);
+pid_t	start_first_cmd(char *cmd, int *pipe_fds, char *infile_path);
+pid_t	start_last_cmd(char *cmd, int *pipe_fds, char *outfile_path);
+int		open_infile(char *infile_path);
+int		open_outfile(char *outfile_path);
+void	close_pipe(int *pipe);
+void	mv_fd(int from, int to);
+pid_t	ft_fork(void);
 
 #endif
