@@ -42,7 +42,7 @@ int	ft_wait(pid_t pid)
 	}
 }
 
-int	start_pipex(char **argv)
+int	do_pipex(char **argv)
 {
 	int		pipe_fds[2];
 	pid_t	pids[2];
@@ -59,7 +59,7 @@ int	start_pipex(char **argv)
 int	main(int argc, char **argv)
 {
 	if (argc == 5)
-		return (start_pipex(argv + 1));
+		return (do_pipex(argv + 1));
 	else
 		error_out(EXIT_FAILURE, "call with 4 arguments: ./pipex $1 $2 $3 $4\n",
 			0);
