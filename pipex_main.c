@@ -15,9 +15,11 @@
 #include <errno.h>
 #include <libft_arr.h>
 #include <libft_os.h>
+#include <libft_io.h>
 #include <libft_str.h>
 #include <stdlib.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 int	get_exit_code(int res)
 {
@@ -33,7 +35,6 @@ int	ft_wait(pid_t pid)
 	int		res;
 	pid_t	sig_pid;
 
-	sig_pid = -1;
 	res = 0;
 	while (true)
 	{

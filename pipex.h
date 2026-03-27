@@ -21,6 +21,7 @@
 "
 
 void	error_out(int exit_code, char *msg, int error_code, bool free_msg);
+void	*check(void *check_me, char *err_msg, bool free_msg);
 pid_t	start_first_cmd(char *cmd, int *pipe_fds, char *infile_path);
 pid_t	start_last_cmd(char *cmd, int *pipe_fds, char *outfile_path);
 int		open_infile(char *infile_path);

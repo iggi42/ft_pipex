@@ -13,13 +13,14 @@
 #include "pipex.h"
 #include <errno.h>
 #include <libft_arr.h>
+#include <libft_io.h>
 #include <libft_os.h>
 #include <libft_str.h>
+#include <stdlib.h>
 #include <unistd.h>
-#include <libft_io.h>
 
 #define EXIT_CMD_NOT_FOUND 127
-#define EXIT_NO_EXEC_PERM 128
+#define EXIT_NO_EXEC_PERM 126
 
 static void	cleanup_child(char **argv, char *path)
 {
@@ -33,19 +34,23 @@ static int	child_exec(char *cmd)
 	char	**argv;
 	char	*path;
 
-	if (ft_strlen(cmd) == 0)
-		exit(EXIT_FAILURE);
 	argv = ft_split(cmd, ' ');
-	if (argv[0][0] == '/' || ft_strncmp("./", argv[0], 2) == 0)
+	if (argv == NULL)
+		error_out(EXIT_FAILURE, NULL, errno, false);
+	if (argv[0] == NULL)
+		path = ft_strdup("");
+	else if (argv[0][0] == '/' || ft_strncmp("./", argv[0], 2) == 0)
 		path = ft_strdup(argv[0]);
 	else
-		path = ft_strdup(ft_os_search_path(argv[0], __environ));
+		path = ft_os_search_path(argv[0], __environ);
 	if (access(path, F_OK) != 0)
-		(cleanup_child(argv, path),
-		error_out(EXIT_CMD_NOT_FOUND, "Command not found", errno, false));
+	{
+		cleanup_child(argv, NULL);
+		error_out(EXIT_CMD_NOT_FOUND, path, errno, true);
+	}
 	execve(path, argv, __environ);
 	cleanup_child(argv, NULL);
-	error_out(127, path, errno, true);
+	error_out(EXIT_NO_EXEC_PERM, path, errno, true);
 	return (-1);
 }
 
@@ -57,10 +62,10 @@ pid_t	start_first_cmd(char *cmd, int *pipe_fds, char *infile_path)
 	pid = ft_fork();
 	if (pid != 0)
 		return (pid);
-	in_fd = open_infile(infile_path);
-	mv_fd(in_fd, STDIN_FILENO);
 	dup2(pipe_fds[1], STDOUT_FILENO);
 	close_pipe(pipe_fds);
+	in_fd = open_infile(infile_path);
+	mv_fd(in_fd, STDIN_FILENO);
 	child_exec(cmd);
 	return (-1);
 }
@@ -73,9 +78,9 @@ pid_t	start_last_cmd(char *cmd, int *pipe_fds, char *outfile_path)
 	pid = ft_fork();
 	if (pid != 0)
 		return (pid);
-	out_fd = open_outfile(outfile_path);
-	mv_fd(out_fd, STDOUT_FILENO);
 	dup2(pipe_fds[0], STDIN_FILENO);
 	close_pipe(pipe_fds);
+	out_fd = open_outfile(outfile_path);
+	mv_fd(out_fd, STDOUT_FILENO);
 	return (child_exec(cmd));
 }

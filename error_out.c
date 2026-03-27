@@ -20,26 +20,23 @@
 
 void	error_out(int exit_code, char *msg, int error_code, bool free_msg)
 {
-	ft_putstr_fd(FT_APP_NAME, STDERR_FILENO);
 	if (msg != NULL)
 	{
-		ft_putstr_fd(": ", STDERR_FILENO);
 		ft_putstr_fd(msg, STDERR_FILENO);
+		ft_putstr_fd(": ", STDERR_FILENO);
 	}
 	if (error_code != 0)
-	{
-		ft_putstr_fd(": ", STDERR_FILENO);
 		ft_putstr_fd(strerror(error_code), STDERR_FILENO);
-	}
 	ft_putstr_fd("\n", STDERR_FILENO);
-	if(free_msg)
+	if (free_msg)
 		free(msg);
 	exit(exit_code);
 }
 
-void check(char *err_msg)
+void	*check(void *check_me, char *err_msg, bool free_msg)
 {
-	if(errno == 0)
-		return;
-	error_out(EXIT_SUCCESS, err_msg, errno, false);
+	if (errno == 0 && check_me != NULL)
+		return (check_me);
+	error_out(EXIT_SUCCESS, err_msg, errno, free_msg);
+	return (NULL);
 }
