@@ -24,7 +24,3 @@ $(NAME): $(OBJS) $(LIBFT_A)
 GIT_IGNORE += $(NAME)_debug
 $(NAME)_debug: $(OBJS) $(LIBFT_A) 
 	$(CC) -g $(CFLAGS) -o $@ $^
-
-libft:
-	git clone https://github.com/iggi42/ft_libft libft
-

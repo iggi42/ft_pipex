@@ -13,8 +13,14 @@
 #ifndef PIPEX_H
 # define PIPEX_H
 # include <unistd.h>
+# include <stdbool.h>
 
-void	error_out(int exit_code, char *msg, int error_code);
+# define HELP_TEXT "call with 4 arguments: \
+./pipex $1 $2 $3 $4 to simulate \
+< $1 $2 | $3 > $4 \
+"
+
+void	error_out(int exit_code, char *msg, int error_code, bool free_msg);
 pid_t	start_first_cmd(char *cmd, int *pipe_fds, char *infile_path);
 pid_t	start_last_cmd(char *cmd, int *pipe_fds, char *outfile_path);
 int		open_infile(char *infile_path);

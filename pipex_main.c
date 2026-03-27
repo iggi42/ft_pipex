@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "pipex.h"
+#include <stdbool.h>
 #include <errno.h>
 #include <libft_arr.h>
 #include <libft_os.h>
@@ -48,7 +49,7 @@ int	do_pipex(char **argv)
 	pid_t	pids[2];
 
 	if (pipe(pipe_fds) == -1)
-		return (error_out(EXIT_FAILURE, "pipe failed", errno), -1);
+		return (error_out(EXIT_FAILURE, NULL, errno, false), -1);
 	pids[0] = start_first_cmd(argv[1], pipe_fds, argv[0]);
 	pids[1] = start_last_cmd(argv[2], pipe_fds, argv[3]);
 	close_pipe(pipe_fds);
@@ -61,7 +62,6 @@ int	main(int argc, char **argv)
 	if (argc == 5)
 		return (do_pipex(argv + 1));
 	else
-		error_out(EXIT_FAILURE, "call with 4 arguments: ./pipex $1 $2 $3 $4\n",
-			0);
+		error_out(EXIT_FAILURE, HELP_TEXT, 0, false);
 	return (EXIT_FAILURE);
 }

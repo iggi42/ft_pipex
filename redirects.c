@@ -24,7 +24,7 @@ int	open_infile(char *infile_path)
 	fd = open(infile_path, O_RDONLY);
 	if (fd > 0)
 		return (fd);
-	error_out(EXIT_FAILURE, infile_path, errno);
+	error_out(EXIT_FAILURE, infile_path, errno, false);
 	return (-1);
 }
 
@@ -36,6 +36,6 @@ int	open_outfile(char *outfile_path)
 	fd = open(outfile_path, O_CREAT | O_TRUNC | O_WRONLY, 0644);
 	if (fd > 0)
 		return (fd);
-	error_out(EXIT_FAILURE, outfile_path, errno);
+	error_out(EXIT_FAILURE, outfile_path, errno, false);
 	return (-1);
 }

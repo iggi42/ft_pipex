@@ -15,6 +15,11 @@
 #include <libft_arr.h>
 #include <libft_os.h>
 #include <libft_str.h>
+#include <unistd.h>
+#include <libft_io.h>
+
+#define EXIT_CMD_NOT_FOUND 127
+#define EXIT_NO_EXEC_PERM 128
 
 static void	cleanup_child(char **argv, char *path)
 {
@@ -31,15 +36,16 @@ static int	child_exec(char *cmd)
 	if (ft_strlen(cmd) == 0)
 		exit(EXIT_FAILURE);
 	argv = ft_split(cmd, ' ');
-	if (ft_strncmp("./", argv[0], 2) == 0)
+	if (argv[0][0] == '/' || ft_strncmp("./", argv[0], 2) == 0)
 		path = ft_strdup(argv[0]);
 	else
-		path = ft_os_search_path(argv[0], __environ);
-	if (path == NULL)
-		(cleanup_child(argv, path), error_out(127, "command not found", 0));
+		path = ft_strdup(ft_os_search_path(argv[0], __environ));
+	if (access(path, F_OK) != 0)
+		(cleanup_child(argv, path),
+		error_out(EXIT_CMD_NOT_FOUND, "Command not found", errno, false));
 	execve(path, argv, __environ);
-	cleanup_child(argv, path);
-	error_out(128, NULL, errno);
+	cleanup_child(argv, NULL);
+	error_out(127, path, errno, true);
 	return (-1);
 }
 

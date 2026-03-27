@@ -34,6 +34,6 @@ pid_t	ft_fork(void)
 	errno = 0;
 	result = fork();
 	if (result < 0)
-		error_out(EXIT_FAILURE, NULL, errno);
+		error_out(EXIT_FAILURE, NULL, errno, false);
 	return (result);
 }

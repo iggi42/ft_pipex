@@ -10,12 +10,15 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <errno.h>
 #include <fcntl.h>
 #include <libft_io.h>
+#include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-void	error_out(int exit_code, char *msg, int error_code)
+void	error_out(int exit_code, char *msg, int error_code, bool free_msg)
 {
 	ft_putstr_fd(FT_APP_NAME, STDERR_FILENO);
 	if (msg != NULL)
@@ -29,5 +32,14 @@ void	error_out(int exit_code, char *msg, int error_code)
 		ft_putstr_fd(strerror(error_code), STDERR_FILENO);
 	}
 	ft_putstr_fd("\n", STDERR_FILENO);
+	if(free_msg)
+		free(msg);
 	exit(exit_code);
+}
+
+void check(char *err_msg)
+{
+	if(errno == 0)
+		return;
+	error_out(EXIT_SUCCESS, err_msg, errno, false);
 }
