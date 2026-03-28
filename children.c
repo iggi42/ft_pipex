@@ -43,14 +43,14 @@ static int	child_exec(char *cmd)
 		path = ft_strdup(argv[0]);
 	else
 		path = ft_os_search_path(argv[0], __environ);
-	if (access(path, F_OK) != 0)
+	if (path == NULL)
 	{
 		cleanup_child(argv, NULL);
-		error_out(EXIT_CMD_NOT_FOUND, path, errno, true);
+		error_out(EXIT_CMD_NOT_FOUND, path, errno, false);
 	}
 	execve(path, argv, __environ);
 	cleanup_child(argv, NULL);
-	error_out(EXIT_NO_EXEC_PERM, path, errno, true);
+	error_out(EXIT_NO_EXEC_PERM, path, errno, false);
 	return (-1);
 }
 
