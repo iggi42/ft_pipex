@@ -16,17 +16,30 @@
 #include <libft_io.h>
 #include <libft_os.h>
 #include <libft_str.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #define EXIT_CMD_NOT_FOUND 127
 #define EXIT_NO_EXEC_PERM 126
 
-static void	cleanup_child(char **argv, char *path)
+static void	clean_arr(char **argv)
 {
 	ft_arr_each((t_arr)argv, free);
 	free(argv);
-	free(path);
+}
+
+static bool	is_path(char *cmd)
+{
+	while (cmd != NULL)
+	{
+		if (*cmd == '/')
+			return (true);
+		if (*cmd == '\0')
+			return (false);
+		cmd++;
+	}
+	return (false);
 }
 
 static int	child_exec(char *cmd)
@@ -37,20 +50,19 @@ static int	child_exec(char *cmd)
 	argv = ft_split(cmd, ' ');
 	if (argv == NULL)
 		error_out(EXIT_FAILURE, NULL, errno, false);
-	if (argv[0] == NULL)
-		path = ft_strdup("");
-	else if (argv[0][0] == '/' || ft_strncmp("./", argv[0], 2) == 0)
-		path = ft_strdup(argv[0]);
-	else
+	if (!is_path(argv[0]))
 		path = ft_os_search_path(argv[0], __environ);
-	if (path == NULL)
+	else
+		path = ft_strdup(argv[0]);
+	if (path == NULL || access(path, F_OK))
 	{
-		cleanup_child(argv, NULL);
-		error_out(EXIT_CMD_NOT_FOUND, path, errno, false);
+		path = (free(path), ft_strf("%s: command not found", argv[0]));
+		clean_arr(argv);
+		error_out(EXIT_CMD_NOT_FOUND, path, 0, true);
 	}
 	execve(path, argv, __environ);
-	cleanup_child(argv, NULL);
-	error_out(EXIT_NO_EXEC_PERM, path, errno, false);
+	clean_arr(argv);
+	error_out(EXIT_NO_EXEC_PERM, path, errno, true);
 	return (-1);
 }
 

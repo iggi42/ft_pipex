@@ -23,7 +23,8 @@ void	error_out(int exit_code, char *msg, int error_code, bool free_msg)
 	if (msg != NULL)
 	{
 		ft_putstr_fd(msg, STDERR_FILENO);
-		ft_putstr_fd(": ", STDERR_FILENO);
+		if (error_code != 0)
+			ft_putstr_fd(": ", STDERR_FILENO);
 	}
 	if (error_code != 0)
 		ft_putstr_fd(strerror(error_code), STDERR_FILENO);
