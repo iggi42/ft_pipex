@@ -9,7 +9,7 @@ It takes an input file, runs two commands, and writes the result to an output fi
 
 ## Instructions
 
-### building
+### How to build
 ```bash
 make        # compile
 make clean  # remove object files
