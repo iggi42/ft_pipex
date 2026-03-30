@@ -12,10 +12,11 @@
 
 #ifndef PIPEX_H
 # define PIPEX_H
-# include <unistd.h>
 # include <stdbool.h>
+# include <unistd.h>
 
-# define HELP_TEXT "call with 4 arguments: \
+# define HELP_TEXT \
+	"call with 4 arguments: \
 ./pipex $1 $2 $3 $4 to simulate \
 < $1 $2 | $3 > $4 \
 "
@@ -29,5 +30,6 @@ int		open_outfile(char *outfile_path);
 void	close_pipe(int *pipe);
 void	mv_fd(int from, int to);
 pid_t	ft_fork(void);
+int		ft_dup(int from, int to);
 
 #endif

@@ -74,7 +74,7 @@ pid_t	start_first_cmd(char *cmd, int *pipe_fds, char *infile_path)
 	pid = ft_fork();
 	if (pid != 0)
 		return (pid);
-	dup2(pipe_fds[1], STDOUT_FILENO);
+	ft_dup(pipe_fds[1], STDOUT_FILENO);
 	close_pipe(pipe_fds);
 	in_fd = open_infile(infile_path);
 	mv_fd(in_fd, STDIN_FILENO);
@@ -90,7 +90,7 @@ pid_t	start_last_cmd(char *cmd, int *pipe_fds, char *outfile_path)
 	pid = ft_fork();
 	if (pid != 0)
 		return (pid);
-	dup2(pipe_fds[0], STDIN_FILENO);
+	ft_dup(pipe_fds[0], STDIN_FILENO);
 	close_pipe(pipe_fds);
 	out_fd = open_outfile(outfile_path);
 	mv_fd(out_fd, STDOUT_FILENO);

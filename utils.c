@@ -15,6 +15,16 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+int	ft_dup(int from, int to)
+{
+	int	result;
+
+	result = dup2(from, to);
+	if (result < 0)
+		exit(EXIT_FAILURE);
+	return (result);
+}
+
 void	close_pipe(int *pipe)
 {
 	close(pipe[0]);
@@ -23,7 +33,7 @@ void	close_pipe(int *pipe)
 
 void	mv_fd(int from, int to)
 {
-	dup2(from, to);
+	ft_dup(from, to);
 	close(from);
 }
 
