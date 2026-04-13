@@ -10,9 +10,8 @@
 #                                                                              #
 # **************************************************************************** #
 
-NAME = pipex
-HEADER = $(NAME).h
-SRCS += children.c error_out.c pipex_main.c redirects.c utils.c
+NAME = pipex_cmd
+SRCS += pipex_cmd.c mcmd.c pipex_utils.c pipex_parse.c
 
 FT_EXTRA_CFLAGS += -g
 
