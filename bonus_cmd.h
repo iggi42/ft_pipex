@@ -22,7 +22,7 @@ typedef struct s_redi
 typedef struct s_cmd
 {
 	char		**argv;
-	t_list		*reds;
+	t_redi		**reds;
 }				t_cmd;
 
 typedef t_cmd	*t_pipe;

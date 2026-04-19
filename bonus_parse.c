@@ -65,6 +65,6 @@ size_t	parse_cmd(char *textform, t_cmd *target)
 	}
 	ft_free(split);
 	target->argv = (char **)ft_lst2arr(argv);
-	target->reds = redis;
+	target->reds = (t_redi **) ft_lst2arr(redis);
 	return (ft_strlen(textform));
 }

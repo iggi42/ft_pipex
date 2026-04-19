@@ -10,9 +10,9 @@
 #                                                                              #
 # **************************************************************************** #
 
-NAME = pipex_cmd
-SRCS += pipex_cmd.c mcmd.c pipex_utils.c pipex_parse.c
-
+NAME = pipex
+# SRCS += pipex_cmd.c mcmd.c pipex_utils.c pipex_parse.c
+SRCS += bw_core.c mcmd.c pipex_cmd.c pipex_parse.c pipex_utils.c
 FT_EXTRA_CFLAGS += -g
 
 -include libft/project.mk
