@@ -5,36 +5,66 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: fkruger <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/03/27 14:40:40 by fkruger           #+#    #+#             */
-/*   Updated: 2026/03/27 14:40:41 by fkruger          ###   ########.fr       */
+/*   Created: 2026/04/19 16:26:51 by fkruger           #+#    #+#             */
+/*   Updated: 2026/04/19 16:26:51 by fkruger          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex.h"
+#include "bw.h"
+#include "redi.h"
 #include <errno.h>
-#include <stdlib.h>
+#include <fcntl.h>
+#include <libft_io.h>
+#include <libft_mem.h>
+#include <libft_merle.h>
+#include <libft_str.h>
+#include <string.h>
 #include <unistd.h>
 
-int	ft_dup(int from, int to)
+void	ft_exit(int exit_code)
 {
-	int	result;
-
-	result = dup2(from, to);
-	if (result < 0)
-		exit(EXIT_FAILURE);
-	return (result);
+	ft_bw_cleanup();
+	ft_m3_cleanup();
+	exit(exit_code);
 }
 
-void	close_pipe(int *pipe)
+void	*my_malloc(size_t size)
 {
-	close(pipe[0]);
-	close(pipe[1]);
+	void	*result;
+
+	result = ft_malloc(size);
+	if (result)
+		return (result);
+	ft_putendl_fd("\nOUT OF MEMORY\n", STDOUT_FILENO);
+	ft_exit(EXIT_FAILURE);
+	return (NULL);
 }
 
-void	mv_fd(int from, int to)
+void	error_out(int exit_code, char *msg, int error_code)
 {
-	ft_dup(from, to);
-	close(from);
+	if (msg != NULL)
+	{
+		ft_putstr_fd(msg, STDERR_FILENO);
+		if (error_code != 0)
+			ft_putstr_fd(": ", STDERR_FILENO);
+	}
+	if (error_code != 0)
+		ft_putstr_fd(strerror(error_code), STDERR_FILENO);
+	ft_putstr_fd("\n", STDERR_FILENO);
+	ft_exit(exit_code);
+}
+
+int	*ft_pipe(int *new_pipe)
+{
+	ft_memset(new_pipe, -1, 2 * sizeof(int));
+	if (pipe(new_pipe) == 0)
+	{
+		ft_bw_add(new_pipe[R]);
+		ft_bw_add(new_pipe[W]);
+		return (new_pipe);
+	}
+	error_out(EXIT_FAILURE, "pipe failure", errno);
+	return (NULL);
 }
 
 pid_t	ft_fork(void)
@@ -44,6 +74,34 @@ pid_t	ft_fork(void)
 	errno = 0;
 	result = fork();
 	if (result < 0)
-		error_out(EXIT_FAILURE, NULL, errno, false);
+		error_out(EXIT_FAILURE, "fork failure", errno);
 	return (result);
+}
+
+void	ft_close(int fd)
+{
+	ft_bw_rm(fd);
+	close(fd);
+}
+
+void	ft_dup2(int from, int to)
+{
+	int		result;
+	char	*err_msg;
+
+	result = dup2(from, to);
+	if (result == to && ft_bw_add(to))
+		return ;
+	err_msg = ft_strf("dup failure [%d => %d]: %s", from, to, strerror(errno));
+	ft_putendl_fd(err_msg, STDERR_FILENO);
+	ft_free(err_msg);
+	ft_exit(EXIT_FAILURE);
+}
+
+void	mv_fd(int from, int to)
+{
+	if (from == to)
+		return ;
+	ft_dup2(from, to);
+	ft_close(from);
 }

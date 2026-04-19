@@ -1,4 +1,16 @@
-#include "pipex_cmd.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parse.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fkruger <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/19 17:31:37 by fkruger           #+#    #+#             */
+/*   Updated: 2026/04/19 17:31:38 by fkruger          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "cmd.h"
 #include <libft_arr.h>
 #include <libft_io.h>
 #include <libft_ll.h>
@@ -34,7 +46,6 @@ t_redi	*is_redi_op(char *s)
 		result->target = ft_strdup(s + 1);
 	else
 		result->target = ft_strdup(s + 2);
-	// ft_printf("redi target %s\n", result->target);
 	return (result);
 }
 
@@ -65,6 +76,6 @@ size_t	parse_cmd(char *textform, t_cmd *target)
 	}
 	ft_free(split);
 	target->argv = (char **)ft_lst2arr(argv);
-	target->reds = (t_redi **) ft_lst2arr(redis);
+	target->reds = (t_redi **)ft_lst2arr(redis);
 	return (ft_strlen(textform));
 }

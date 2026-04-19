@@ -1,29 +1,39 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   bw.h                                               :+:      :+:    :+:   */
+/*   redi.h                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fkruger <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/04/07 04:24:26 by fkruger           #+#    #+#             */
-/*   Updated: 2026/04/07 04:24:33 by fkruger          ###   ########.fr       */
+/*   Created: 2026/04/19 17:41:22 by fkruger           #+#    #+#             */
+/*   Updated: 2026/04/19 17:41:24 by fkruger          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef BW_H
-# define BW_H
-# include <stdbool.h>
+#ifndef REDI_H
+# define REDI_H
 
-// @brief add fd to structure, bool to check if it worked
-bool	ft_bw_add(int fd);
+enum						e_pipe_end
+{
+	R = 0,
+	W = 1
+};
 
-// @brief remove a fd from m3
-void	ft_bw_rm(int fd);
+typedef struct s_redi
+{
+	enum					e_redi_kind
+	{
+		INVALID = -1,
+		IN,
+		OUT,
+		OUT_APPEND,
+		HERE_DOC
+	} kind;
+	char					*target;
+}							t_redi;
 
-// @brief call the apply function against each stored pointer
-void	ft_bw_each(void (*apply)(int fd));
+typedef enum e_redi_kind	t_red_k;
 
-// @brief closes all stored the fds and frees the internal data structure
-void	ft_bw_cleanup(void);
+void	apply_redi(t_redi *apply_me);
 
 #endif

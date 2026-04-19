@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef BW_PRIV_H
-# define BW_PRIV_H
+#ifndef BW_PRIV_T_H
+# define BW_PRIV_T_H
 
 typedef struct s_ms
 {

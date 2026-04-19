@@ -1,29 +1,31 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   bw.h                                               :+:      :+:    :+:   */
+/*   utils.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fkruger <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/04/07 04:24:26 by fkruger           #+#    #+#             */
-/*   Updated: 2026/04/07 04:24:33 by fkruger          ###   ########.fr       */
+/*   Created: 2026/04/19 09:08:24 by fkruger           #+#    #+#             */
+/*   Updated: 2026/04/19 09:08:43 by fkruger          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef BW_H
-# define BW_H
-# include <stdbool.h>
+#ifndef UTILS_H
+# define UTILS_H
+# include <stdlib.h>
 
-// @brief add fd to structure, bool to check if it worked
-bool	ft_bw_add(int fd);
+void	ft_exit(int exit_code);
 
-// @brief remove a fd from m3
-void	ft_bw_rm(int fd);
+void	*my_malloc(size_t size);
+void	print_str_arr(char **ar);
 
-// @brief call the apply function against each stored pointer
-void	ft_bw_each(void (*apply)(int fd));
+void	error_out(int exit_code, char *msg, int error_code);
 
-// @brief closes all stored the fds and frees the internal data structure
-void	ft_bw_cleanup(void);
+// in bw_utils.c
+pid_t	ft_fork(void);
+void	ft_close(int fd);
+void	ft_dup2(int from, int to);
+void	mv_fd(int from, int to);
+int		*ft_pipe(int *new_pipe);
 
 #endif

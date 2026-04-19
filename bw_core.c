@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_m3_core.c                                       :+:      :+:    :+:   */
+/*   bw_core.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fkruger <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,12 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex_bw.h"
+#include "bw.h"
 #include "bw_priv_t.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <stdio.h>
 
 static t_ms	**head(void)
 {
@@ -32,7 +31,6 @@ bool	ft_bw_add(int fd)
 		return (false);
 	if (fd < 2)
 		return (true);
-	dprintf(STDERR_FILENO, "bw_add:\t[%d]\n", fd);
 	new_head = malloc(sizeof(t_ms));
 	if (new_head == NULL)
 		return (false);
@@ -47,7 +45,6 @@ void	ft_bw_rm(int fd)
 	t_ms	**curr;
 	t_ms	*cache;
 
-	dprintf(STDERR_FILENO, "bw_rm:\t[%d]\n", fd);
 	if (fd < 0)
 		return ;
 	curr = head();

@@ -1,4 +1,4 @@
-# *************************************************************************** #
+# ***************************************************************************  #
 #                                                                              #
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
@@ -11,24 +11,13 @@
 # **************************************************************************** #
 
 NAME = pipex
-HEADER = $(NAME).h
-SRCS += children.c error_out.c pipex_main.c redirects.c utils.c
 
-#FT_EXTRA_CFLAGS += -g
+SRCS += bw_core.c cmd.c parse.c redi.c utils.c cli.c
+
+FT_EXTRA_CFLAGS += -g
 
 -include libft/project.mk
 
 GIT_IGNORE += $(NAME)
 $(NAME): $(OBJS) $(LIBFT_A) 
 	$(CC) $(CFLAGS) -o $@ $^
-
-GIT_IGNORE += $(NAME)_debug
-$(NAME)_debug: $(OBJS) $(LIBFT_A) 
-	$(CC) -g $(CFLAGS) -o $@ $^
-
-bonus: bonus.mk
-bonus: bonus_parse.h bonus_parse.c
-bonus: bonus_utils.h bonus_utils.c
-bonus: bonus_cli.h bonus_cli.c
-bonus: bonus_cmd.c
-	$(MAKE) -f bonus.mk
