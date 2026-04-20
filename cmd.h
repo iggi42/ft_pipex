@@ -28,6 +28,7 @@ typedef struct s_cmd
 }				t_cmd;
 
 typedef t_cmd	*t_pipe;
+
 t_byte			pipex_exec_pipe(t_pipe *full_pipe);
 size_t			parse_cmd(char *textform, t_cmd *target);
 #endif

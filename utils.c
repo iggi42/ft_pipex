@@ -18,6 +18,7 @@
 #include <libft_mem.h>
 #include <libft_merle.h>
 #include <libft_str.h>
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -56,7 +57,6 @@ void	error_out(int exit_code, char *msg, int error_code)
 
 int	*ft_pipe(int *new_pipe)
 {
-	ft_memset(new_pipe, -1, 2 * sizeof(int));
 	if (pipe(new_pipe) == 0)
 	{
 		ft_bw_add(new_pipe[R]);
@@ -90,18 +90,19 @@ void	ft_dup2(int from, int to)
 	char	*err_msg;
 
 	result = dup2(from, to);
-	if (result == to && ft_bw_add(to))
-		return ;
-	err_msg = ft_strf("dup failure [%d => %d]: %s", from, to, strerror(errno));
+	if (result == to)
+		return (ft_bw_add(to));
+	err_msg = ft_strf("ft_dup failure [%d => %d]: %s", from, to,
+			strerror(errno));
 	ft_putendl_fd(err_msg, STDERR_FILENO);
 	ft_free(err_msg);
 	ft_exit(EXIT_FAILURE);
 }
 
-void	mv_fd(int from, int to)
-{
-	if (from == to)
-		return ;
-	ft_dup2(from, to);
-	ft_close(from);
-}
+// void	mv_fd(int from, int to)
+// {
+// 	if (from == to)
+// 		return ;
+// 	ft_dup2(from, to);
+// 	ft_close(from);
+// }

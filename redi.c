@@ -10,14 +10,14 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-
-#include <errno.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include "utils.h"
-#include <libft_io.h>
 #include "bw.h"
 #include "redi.h"
+#include "stdio.h"
+#include "utils.h"
+#include <errno.h>
+#include <fcntl.h>
+#include <libft_io.h>
+#include <unistd.h>
 
 int	open_infile(char *infile_path)
 {
@@ -78,17 +78,17 @@ static int (*get_opn(enum e_redi_kind k))(char *)
 
 void	apply_redi(t_redi *apply_me)
 {
-	int		fd;
-	int target;
+	int	fd;
+	int	target;
 
 	if (apply_me == NULL)
 		return ;
 	fd = (get_opn(apply_me->kind))(apply_me->target);
 	ft_bw_add(fd);
-
-	if(apply_me->kind == OUT)
+	if (apply_me->kind == OUT)
 		target = STDOUT_FILENO;
 	else
 		target = STDIN_FILENO;
-	mv_fd(fd, target);
+	ft_dup2(fd, target);
+	// mv_fd(fd, target);
 }

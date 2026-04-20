@@ -56,11 +56,11 @@ char	*find_exec_file(char *cmd0)
 
 void	apply_stdenv(int stdenv[2])
 {
-	mv_fd(stdenv[R], STDIN_FILENO);
-	mv_fd(stdenv[W], STDOUT_FILENO);
+	ft_dup2(stdenv[R], STDIN_FILENO);
+	ft_dup2(stdenv[W], STDOUT_FILENO);
 }
 
-void	my_apply_redi(void *arg)
+static void	my_apply_redi(void *arg)
 {
 	apply_redi(arg);
 }
@@ -73,6 +73,7 @@ static void	exec_cmd(t_cmd *cmd, int stdenv[2])
 	apply_stdenv(stdenv);
 	ft_arr_each((t_arr)(cmd->reds), my_apply_redi);
 	path = find_exec_file(cmd->argv[0]);
+	ft_bw_cleanup();
 	execve(path, cmd->argv, __environ);
 	error_out(EXIT_NO_EXEC_PERM, path, errno);
 }
@@ -85,7 +86,7 @@ static void	add_pid(t_list **pids, pid_t pid)
 	new_content = my_malloc(sizeof(pid_t));
 	*new_content = pid;
 	new_el = ft_lstnew(new_content);
-	ft_lstadd_front(pids, new_el);
+	ft_lstadd_back(pids, new_el);
 }
 
 // returns a list of pids to wait on
@@ -108,10 +109,6 @@ static t_list	*exec_pipe(t_cmd **cmds)
 		fr = ft_fork();
 		if (fr == 0)
 			exec_cmd(cmds[0], stdenv);
-		if (stdenv[W] > 2)
-			ft_close(stdenv[W]);
-		if (stdenv[R] > 2)
-			ft_close(stdenv[R]);
 		add_pid(&result, fr);
 		cmds++;
 	}
@@ -123,8 +120,9 @@ static t_byte	wait_pipe(t_list *pids)
 	t_byte	result;
 
 	if (pids == NULL)
-		return (0);
+		return (42);
 	result = ft_wait(*(int *)pids->content);
+	// ft_printf("result %d\n", result);
 	if (pids->next == NULL)
 		return (result);
 	return (wait_pipe(pids->next));
@@ -136,5 +134,6 @@ t_byte	pipex_exec_pipe(t_pipe *full_pipe)
 	t_list	*pids;
 
 	pids = exec_pipe(full_pipe);
+	ft_bw_cleanup();
 	return (wait_pipe(pids));
 }

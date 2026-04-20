@@ -12,6 +12,8 @@
 
 #include "bw.h"
 #include "bw_priv_t.h"
+#include "utils.h"
+#include <libft_mem.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -23,21 +25,16 @@ static t_ms	**head(void)
 	return (&core_head);
 }
 
-bool	ft_bw_add(int fd)
+void	ft_bw_add(int fd)
 {
 	t_ms	*new_head;
 
-	if (fd < 0)
-		return (false);
 	if (fd < 2)
-		return (true);
-	new_head = malloc(sizeof(t_ms));
-	if (new_head == NULL)
-		return (false);
+		return ;
+	new_head = my_malloc(sizeof(t_ms));
 	new_head->next = *head();
 	new_head->fd = fd;
 	*head() = new_head;
-	return (true);
 }
 
 void	ft_bw_rm(int fd)
@@ -54,7 +51,7 @@ void	ft_bw_rm(int fd)
 		{
 			cache = *curr;
 			*curr = (*curr)->next;
-			free(cache);
+			ft_free(cache);
 		}
 		else
 			curr = &(*curr)->next;
@@ -78,10 +75,11 @@ void	ft_bw_cleanup(void)
 	curr = *head();
 	while (curr)
 	{
-		close(curr->fd);
+		if (curr->fd > 2)
+			close(curr->fd);
 		cache = curr;
 		curr = curr->next;
-		free(cache);
+		ft_free(cache);
 	}
 	*head() = NULL;
 }

@@ -25,7 +25,7 @@ void	error_out(int exit_code, char *msg, int error_code);
 pid_t	ft_fork(void);
 void	ft_close(int fd);
 void	ft_dup2(int from, int to);
-void	mv_fd(int from, int to);
+// void	mv_fd(int from, int to);
 int		*ft_pipe(int *new_pipe);
 
 #endif

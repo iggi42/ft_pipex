@@ -15,7 +15,7 @@
 # include <stdbool.h>
 
 // @brief add fd to structure, bool to check if it worked
-bool	ft_bw_add(int fd);
+void	ft_bw_add(int fd);
 
 // @brief remove a fd from m3
 void	ft_bw_rm(int fd);
