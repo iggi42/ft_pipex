@@ -12,7 +12,7 @@
 
 NAME = pipex
 
-SRCS += bw_core.c cmd.c parse.c redi.c utils.c cli.c
+SRCS += bw_core.c cmd.c parse.c redi.c utils.c cli.c fs_utils.c here_doc.c
 
 FT_EXTRA_CFLAGS += -g
 

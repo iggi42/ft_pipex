@@ -1,36 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   cmd.h                                              :+:      :+:    :+:   */
+/*   here_doc.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fkruger <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/04/19 08:47:52 by fkruger           #+#    #+#             */
-/*   Updated: 2026/04/19 08:47:54 by fkruger          ###   ########.fr       */
+/*   Created: 2026/04/23 15:24:34 by fkruger           #+#    #+#             */
+/*   Updated: 2026/04/23 15:24:35 by fkruger          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CMD_H
-# define CMD_H
+#ifndef HERE_DOC_H
+# define HERE_DOC_H
+# include <fcntl.h>
 
-# include "redi.h"
-# include <libft_ll.h>
-# include <libft_mem.h>
+int fill_here_doc(char *delimiter, pid_t *writer);
 
-# define EXIT_CMD_NOT_FOUND 127
-# define EXIT_NO_EXEC_PERM 126
-
-typedef struct s_cmd
-{
-	char		**argv;
-	t_redi		**reds;
-}				t_cmd;
-
-typedef t_cmd	*t_pipe;
-
-bool			is_path(char *cmd);
-char			*find_exec_file(char *cmd0);
-
-t_byte			run_pipe(t_pipe *full_pipe);
-size_t			parse_cmd(char *textform, t_cmd *target);
 #endif

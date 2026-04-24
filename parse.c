@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "cmd.h"
+#include "redi.h"
 #include <libft_arr.h>
 #include <libft_io.h>
 #include <libft_ll.h>
@@ -43,9 +44,9 @@ t_redi	*is_redi_op(char *s)
 	result = ft_malloc(sizeof(t_redi));
 	result->kind = kind;
 	if (kind == OUT || kind == IN)
-		result->target = ft_strdup(s + 1);
+		redi_set_path(result, ft_strdup(s + 1));
 	else
-		result->target = ft_strdup(s + 2);
+		redi_set_path(result, ft_strdup(s + 2));
 	return (result);
 }
 

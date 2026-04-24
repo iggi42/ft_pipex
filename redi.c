@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#define _GNU_SOURCE
 #include "bw.h"
 #include "redi.h"
 #include "stdio.h"
@@ -17,6 +18,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <libft_io.h>
+#include <libft_str.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 int	open_infile(char *infile_path)
@@ -24,7 +27,7 @@ int	open_infile(char *infile_path)
 	int	fd;
 
 	errno = 0;
-	fd = open(infile_path, O_RDONLY);
+	fd = open(infile_path, O_RDONLY | O_CLOEXEC);
 	if (fd >= 0)
 		return (fd);
 	error_out(EXIT_FAILURE, infile_path, errno);
@@ -36,8 +39,8 @@ int	open_outfile(char *outfile_path)
 	int	fd;
 
 	errno = 0;
-	fd = open(outfile_path, O_CREAT | O_TRUNC | O_WRONLY, 0644);
-	if (fd > 0)
+	fd = open(outfile_path, O_CREAT | O_TRUNC | O_WRONLY | O_CLOEXEC, 0644);
+	if (fd >= 0)
 		return (fd);
 	error_out(EXIT_FAILURE, outfile_path, errno);
 	return (-1);
@@ -48,18 +51,21 @@ int	open_outappfile(char *outfile_path)
 	int	fd;
 
 	errno = 0;
-	fd = open(outfile_path, O_CREAT | O_WRONLY | O_APPEND, 0644);
+	fd = open(outfile_path, O_CREAT | O_WRONLY | O_APPEND | O_CLOEXEC, 0644);
 	if (fd >= 0)
 		return (fd);
 	error_out(EXIT_FAILURE, outfile_path, errno);
 	return (-1);
 }
 
-int	open_heredoc(char *end)
+int	tmp_fd(void)
 {
-	(void)end;
-	ft_putendl_fd("HEREDOC IS TODO", STDERR_FILENO);
-	ft_exit(42);
+	int	fd;
+
+	fd = open("/tmp", O_TMPFILE | O_RDWR | O_CLOEXEC, 0600);
+	if (fd >= 0)
+		return (fd);
+	error_out(EXIT_FAILURE, "tmpfile", errno);
 	return (-1);
 }
 
@@ -71,9 +77,26 @@ static int (*get_opn(enum e_redi_kind k))(char *)
 		return (open_outfile);
 	if (k == OUT_APPEND)
 		return (open_outappfile);
-	if (k == HERE_DOC)
-		return (open_heredoc);
+	error_out(EXIT_FAILURE, "unexpected redirector kind", 0);
 	return (NULL);
+}
+
+#define ERR_MSG_REDI_SRC "unexpected redirection source"
+
+void redi_set_path(t_redi *r, char *path)
+{
+	if(r == NULL)
+		return;
+	r->source_kind = PATH;
+	r->source.path = path;
+}
+
+void redi_set_fd(t_redi *r, int fd)
+{
+	if(r == NULL)
+		return;
+	r->source_kind = FD;
+	r->source.fd = fd;
 }
 
 void	apply_redi(t_redi *apply_me)
@@ -83,12 +106,17 @@ void	apply_redi(t_redi *apply_me)
 
 	if (apply_me == NULL)
 		return ;
-	fd = (get_opn(apply_me->kind))(apply_me->target);
+	errno = 0;
+	if (apply_me->source_kind == FD)
+		fd = apply_me->source.fd;
+	else if (apply_me->source_kind == PATH)
+		fd = get_opn(apply_me->kind)(apply_me->source.path);
+	else
+		fd = (error_out(EXIT_FAILURE, ERR_MSG_REDI_SRC, errno), -1);
 	ft_bw_add(fd);
-	if (apply_me->kind == OUT)
+	if (apply_me->kind == OUT || apply_me->kind == OUT_APPEND)
 		target = STDOUT_FILENO;
 	else
 		target = STDIN_FILENO;
 	ft_dup2(fd, target);
-	// mv_fd(fd, target);
 }

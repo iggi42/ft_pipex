@@ -25,44 +25,10 @@
 #include <string.h>
 #include <unistd.h>
 
-static bool	is_path(char *cmd)
-{
-	while (cmd != NULL)
-	{
-		if (*cmd == '/')
-			return (true);
-		if (*cmd == '\0')
-			return (false);
-		cmd++;
-	}
-	return (false);
-}
-
-char	*find_exec_file(char *cmd0)
-{
-	char	*path;
-
-	if (!is_path(cmd0))
-		path = ft_os_search_path(cmd0, __environ);
-	else
-		path = ft_strdup(cmd0);
-	if (path == NULL || access(path, F_OK))
-	{
-		path = ft_strf("%s: command not found", cmd0);
-		error_out(EXIT_CMD_NOT_FOUND, path, 0);
-	}
-	return (path);
-}
-
 void	apply_stdenv(int stdenv[2])
 {
 	ft_dup2(stdenv[R], STDIN_FILENO);
 	ft_dup2(stdenv[W], STDOUT_FILENO);
-}
-
-static void	my_apply_redi(void *arg)
-{
-	apply_redi(arg);
 }
 
 // this _never_ returns
@@ -71,7 +37,7 @@ static void	exec_cmd(t_cmd *cmd, int stdenv[2])
 	char	*path;
 
 	apply_stdenv(stdenv);
-	ft_arr_each((t_arr)(cmd->reds), my_apply_redi);
+	ft_arr_each((t_arr)(cmd->reds), (void (*)(t_arr_el))apply_redi);
 	path = find_exec_file(cmd->argv[0]);
 	ft_bw_cleanup();
 	execve(path, cmd->argv, __environ);
@@ -90,7 +56,7 @@ static void	add_pid(t_list **pids, pid_t pid)
 }
 
 // returns a list of pids to wait on
-static t_list	*exec_pipe(t_cmd **cmds)
+static t_list	*spawn_pipe(t_cmd **cmds)
 {
 	pid_t	fr;
 	int		out_pipe[2];
@@ -115,25 +81,20 @@ static t_list	*exec_pipe(t_cmd **cmds)
 	return (result);
 }
 
-static t_byte	wait_pipe(t_list *pids)
-{
-	t_byte	result;
-
-	if (pids == NULL)
-		return (42);
-	result = ft_wait(*(int *)pids->content);
-	// ft_printf("result %d\n", result);
-	if (pids->next == NULL)
-		return (result);
-	return (wait_pipe(pids->next));
-}
-
 // not defined for an empty pipe, needs at least 1 element!
-t_byte	pipex_exec_pipe(t_pipe *full_pipe)
+t_byte	run_pipe(t_pipe *full_pipe)
 {
 	t_list	*pids;
+	t_byte result;
 
-	pids = exec_pipe(full_pipe);
+	pids = spawn_pipe(full_pipe);
 	ft_bw_cleanup();
-	return (wait_pipe(pids));
+
+	result = 0;
+	while(pids)
+	{
+		result = ft_wait(*(int *)pids->content);
+		pids = pids->next;
+	}
+	return (result);
 }

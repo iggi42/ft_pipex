@@ -36,7 +36,7 @@ void	*my_malloc(size_t size)
 	result = ft_malloc(size);
 	if (result)
 		return (result);
-	ft_putendl_fd("\nOUT OF MEMORY\n", STDOUT_FILENO);
+	ft_putendl_fd("\nOUT OF MEMORY\n", STDERR_FILENO);
 	ft_exit(EXIT_FAILURE);
 	return (NULL);
 }

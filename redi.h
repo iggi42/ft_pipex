@@ -12,6 +12,7 @@
 
 #ifndef REDI_H
 # define REDI_H
+# include "here_doc.h"
 
 enum						e_pipe_end
 {
@@ -29,11 +30,23 @@ typedef struct s_redi
 		OUT_APPEND,
 		HERE_DOC
 	} kind;
-	char					*target;
+	enum					e_redi_source
+	{
+		FD,
+		PATH
+	} source_kind;
+	union					u_redi_source
+	{
+		char				*path;
+		int					fd;
+	} source;
 }							t_redi;
 
 typedef enum e_redi_kind	t_red_k;
 
-void	apply_redi(t_redi *apply_me);
+void						redi_set_path(t_redi *r, char *path);
+void						redi_set_fd(t_redi *r, int fd);
+
+void						apply_redi(t_redi *apply_me);
 
 #endif
